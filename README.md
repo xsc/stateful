@@ -14,12 +14,13 @@ Coming Soon.
 (require '[stateful-generators.core :as gen])
 
 (def ascending-integers
-  (gen/vector
-    (gen/with [{:keys [previous]}]
-      (gen/let [value (gen/fmap #(+ previous %) gen/s-pos-int)]
-        (gen/return {:previous value} value)))))
+   (gen/with-scope {:previous 0}
+     (gen/vector
+       (gen/with [{:keys [previous]}]
+         (gen/let [value (gen/fmap #(+ previous %) gen/s-pos-int)]
+           (gen/return {:previous value} value))))))
 
-(gen/sample (gen/bound ascending-integers {:previous 0}))
+(gen/sample (gen/bound ascending-integers))
 ;; => ([] [3] [3 5] [4 8 12] [4 7] [3 5 10 14] [6 8 13 14 21 24]
 ;;     [5] [] [7 17 26 36 39 46 48])
 ```

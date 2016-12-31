@@ -1,17 +1,18 @@
 (ns stateful-generators.generators.tuple
   (:require [clojure.test.check.generators :as gen]
             [stateful-generators.generators
-             [let :as stateful-let]
-             [return :as stateful-return]]))
+             [fmap :refer [fmap]]
+             [bind :refer [bind]]
+             [return :refer [return]]]))
 
 (defn- tuple*
   [[h & rst :as sq]]
   (if (seq sq)
-    (let [rst-gen (delay (tuple* rst))]
-      (stateful-let/let [head h
-                         tail @rst-gen]
-        (into [head] tail)))
-    (stateful-return/return [])))
+    (let [rst-gen (tuple* rst)]
+      (->> (fn [head]
+             (fmap #(into [head] %) rst-gen))
+           (bind h)))
+    (return [])))
 
 (defn tuple
   "Create a stateful generator producing a vector where each element is
