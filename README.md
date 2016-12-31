@@ -1,8 +1,10 @@
 # stateful-generators
 
-__stateful-generators__ is an extension to Clojure's [test.check], providing
-a way to communicate state between generators. This allows you to generate data
-with internal dependencies.
+__stateful-generators__ is an extension to Clojure's [test.check][test-check],
+providing a way to communicate state between generators. This allows you to
+generate data with internal dependencies.
+
+[test-check]: https://github.com/clojure/test.check
 
 ## Usage
 
