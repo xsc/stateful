@@ -51,21 +51,64 @@
 
 (import-vars
   [clojure.test.check.generators
-   ;; dev helpers
-   sample sample-seq generate
-
-   ;; sequence input
-   elements shuffle
-
-   ;; scalar types
-   nat int pos-int neg-int s-pos-int s-neg-int
-   large-integer* large-integer
-   double* double ratio
-   char char-ascii char-alphanumeric char-alpha
-   string string-ascii string-alphanumeric
-   keyword keyword-ns symbol symbol-ns boolean
-   byte bytes
-   uuid])
+   any
+   any-printable
+   boolean
+   byte
+   bytes
+   char
+   char-alpha
+   char-alphanumeric
+   char-ascii
+   choose
+   ;; container-type
+   double
+   double*
+   elements
+   generate
+   generator?
+   ;; hash-map
+   int
+   keyword
+   keyword-ns
+   large-integer
+   large-integer*
+   lazy-random-states
+   ;; list
+   ;; list-distinct
+   ;; list-distinct-by
+   ;; map
+   nat
+   neg-int
+   ;; no-shrink
+   ;; not-empty
+   ;; one-of
+   pos-int
+   ratio
+   ;; recursive-gen
+   ;; resize
+   s-neg-int
+   s-pos-int
+   sample
+   sample-seq
+   ;; scale
+   ;; set
+   ;; shrink-2
+   shuffle
+   simple-type
+   simple-type-printable
+   ;; sized
+   ;; sorted-set
+   string
+   string-alphanumeric
+   string-ascii
+   ;; such-that
+   symbol
+   symbol-ns
+   uuid
+   ;; vector-distinct
+   ;; vector-distinct-by
+   ])
 
 ;; ## Example
 
