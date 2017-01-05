@@ -1,29 +1,23 @@
-# stateful-generators
+# stateful
 
-__stateful-generators__ is an extension to Clojure's [test.check][test-check],
-providing a way to communicate state between generators. This allows you to
-generate data with internal dependencies.
+__stateful__ is an extension to Clojure's [test.check][test-check], providing a
+way to communicate state between generators. This allows you to more easily
+generate data with internal dependencies or track properties of generated
+values.
+
+Note that, just like with `bind`, shrinking efficiency might suffer in cases
+where you depend on the state influenced by other generators to generate new
+values.
+
+This means that this library should mainly be used to track generation metadata,
+like building the expected return value of some function together with its
+input.
 
 [test-check]: https://github.com/clojure/test.check
 
 ## Usage
 
 Coming Soon.
-
-```clojure
-(require '[stateful-generators.core :as gen])
-
-(def ascending-integers
-   (gen/with-scope {:previous 0}
-     (gen/vector
-       (gen/with [{:keys [previous]}]
-         (gen/let [value (gen/fmap #(+ previous %) gen/s-pos-int)]
-           (gen/return {:previous value} value))))))
-
-(gen/sample (gen/bound ascending-integers))
-;; => ([] [3] [3 5] [4 8 12] [4 7] [3 5 10 14] [6 8 13 14 21 24]
-;;     [5] [] [7 17 26 36 39 46 48])
-```
 
 ## License
 
