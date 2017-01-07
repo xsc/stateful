@@ -7,11 +7,9 @@ values.
 
 Note that, just like with `bind`, shrinking efficiency might suffer in cases
 where you depend on the state influenced by other generators to generate new
-values.
-
-This means that this library should mainly be used to track generation metadata,
-like building the expected return value of some function together with its
-input.
+values. This means that this library should mainly be used to track generation
+metadata, like building the expected return value of some function together with
+its input.
 
 [test-check]: https://github.com/clojure/test.check
 
