@@ -54,6 +54,12 @@
                       (rose/fmap #(vector % *state*)))))]
     (assoc generator :gen gen')))
 
+(defn pure-generator
+  "Like [[generator]], but only returns the generated value, no the state."
+  [gen & [initial-state]]
+  (->> (generator gen initial-state)
+       (gen/fmap first)))
+
 (defn with-scope
   "Wrap a stateful generator to merge the given scope map into the current state
    before generating a value."
