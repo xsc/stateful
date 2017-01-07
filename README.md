@@ -1,5 +1,7 @@
 # stateful
 
+__[Documentation](https://xsc.github.io/stateful/)__
+
 __stateful__ is an extension to Clojure's [test.check][test-check], providing a
 way to communicate state between generators. This allows you to more easily
 generate data with internal dependencies or track properties of generated
