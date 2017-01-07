@@ -55,7 +55,7 @@
     (assoc generator :gen gen')))
 
 (defn pure-generator
-  "Like [[generator]], but only returns the generated value, no the state."
+  "Like [[generator]], but only returns the generated value, no state."
   [gen & [initial-state]]
   (->> (generator gen initial-state)
        (gen/fmap first)))
@@ -75,7 +75,17 @@
 ;; ## Access
 
 (defn state
-  "Generator that returns the full current state map."
+  "Generator that returns the full current state map.
+
+   ```clojure
+   (gen/generate
+     (stateful/generator
+       (gen/fmap keys (stateful/state))
+       {:some :state}))
+   ;; => [(:some) {:some state}]
+   ```
+
+   Use [[value]] to access a certain value using its path into the map."
   []
   (gen/->Generator
     (bound-fn current-state-lookup
@@ -84,7 +94,17 @@
       (rose/pure *state*))))
 
 (defn value
-  "Generator that looks up a path within the state map."
+  "Generator that looks up a path within the state map.
+
+   ```clojure
+   (gen/generate
+     (stateful/generator
+       (stateful/value [:some])
+       {:some :state}))
+   ;; => [:state {:some state}]
+   ```
+
+   Use [[state]] if you need access to the full state map."
   [ks & [default]]
   {:pre [(sequential? ks)]}
   (gen/fmap
