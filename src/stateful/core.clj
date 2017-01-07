@@ -1,5 +1,6 @@
 (ns stateful.core
-  (:require [clojure.test.check.generators :as gen]
+  (:require [stateful.dynamic :as dynamic]
+            [clojure.test.check.generators :as gen]
             [clojure.test.check.rose-tree :as rose]))
 
 ;; ## State
@@ -46,9 +47,10 @@
   [{:keys [gen] :as generator} & [initial-state]]
   {:pre [(or (nil? initial-state)
              (map? initial-state))]}
-  (let [gen' (fn [rnd size]
+  (let [gen' (bound-fn [rnd size]
                (binding [*state* (or initial-state {})]
                  (->> (gen rnd size)
+                      (dynamic/rose-tree)
                       (rose/fmap #(vector % *state*)))))]
     (assoc generator :gen gen')))
 
@@ -66,10 +68,12 @@
 
 ;; ## Access
 
-(def state
+(defn state
   "Generator that returns the full current state map."
+  []
   (gen/->Generator
-    (fn [_ _]
+    (bound-fn current-state-lookup
+      [_ _]
       (assert-stateful!)
       (rose/pure *state*))))
 
@@ -79,7 +83,7 @@
   {:pre [(sequential? ks)]}
   (gen/fmap
     #(get-in % ks default)
-    state))
+    (state)))
 
 ;; ## Return
 
