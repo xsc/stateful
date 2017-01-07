@@ -15,9 +15,42 @@ its input.
 
 [test-check]: https://github.com/clojure/test.check
 
-## Usage
+## Quickstart
 
-Coming Soon.
+__stateful__ allows you to have an implicit state value available in your
+test.check generators by wrapping them using `stateful/generator`.
+
+```clojure
+(require '[stateful.core :as stateful]
+         '[clojure.test.check.generators :as gen])
+```
+
+You can access the state using `stateful/state` or `stateful/value` and
+manipulate it using e.g. `stateful/return` and its variants:
+
+```clojure
+(def ascending-integers
+  (stateful/generator
+    (gen/vector
+      (gen/let [delta    gen/s-pos-int
+                previous (stateful/value [:previous])]
+        (let [value (+ delta previous)]
+          (stateful/return value {:previous value}))))
+    {:previous 0}))
+```
+
+The above example will use the state's `:previous` key to remember the previous
+value, increasing it by `delta` for each new vector element:
+
+```clojure
+(gen/generate ascending-integers)
+;; => [[30 60 82 96 120 140 167 191 220 236 267 291 314 336 349 369 379 392]
+;;     {:previous 392}]
+```
+
+As you can see, a stateful generator produces a tuple of the generated value
+and the final state. If you just want to generate a value and drop the final
+state use `stateful/pure-generator` instead of `stateful/generator`.
 
 ## License
 
