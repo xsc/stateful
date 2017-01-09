@@ -27,8 +27,7 @@ test.check generators by wrapping them using `stateful/generator`.
          '[clojure.test.check.generators :as gen])
 ```
 
-You can access the state using `stateful/state` or `stateful/value` and
-manipulate it using e.g. `stateful/return` and its variants:
+You can manipulate the state using e.g. `stateful/return` and its variants:
 
 ```clojure
 (def ascending-integers
