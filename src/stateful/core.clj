@@ -126,6 +126,40 @@
     #(get-in % ks default)
     (state)))
 
+;; ## Fmap/Bind
+
+(defn fmap
+  "Like test.check's `fmap` but uses a two parameter function passing both the
+   generated value and the current state.
+
+   ```clojure
+   (stateful/fmap
+     (fn [value {:keys [leaf-count]}]
+       {:input-value         value
+        :expected-leaf-count leaf-count})
+     gen-tree)
+   ```
+
+   This function implicitly wraps `gen` with [[generator]]."
+  [f gen]
+  (generator
+    (gen/fmap
+      (fn [[value state]]
+        (f value state))
+      (gen/tuple gen (state)))))
+
+(defn bind
+  "Like test.check's `bind` but uses a two parameter function passing both the
+   generated value and the current state.
+
+   This function implicitly wraps `gen` with [[generator]]."
+  [gen f]
+  (generator
+    (gen/bind
+      (gen/tuple gen (state))
+      (fn [[value state]]
+        (f value state)))))
+
 ;; ## Return
 
 (defn return*
