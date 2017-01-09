@@ -43,3 +43,10 @@
           result (is (tc/quick-check 200 prop))]
       (is (false? (:result result)))
       (is (= [[100 100 100]] (-> result :shrunk :smallest))))))
+
+(defspec t-stateful-generator-return 200
+  (prop/for-all
+    [[asc-ints final-state] (stateful/generator
+                              (gen/tuple (gen/not-empty ascending-integers)
+                                         (stateful/state)))]
+    (= (:previous final-state) (last asc-ints))))
