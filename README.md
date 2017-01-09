@@ -41,17 +41,28 @@ manipulate it using e.g. `stateful/return` and its variants:
     {:previous 0}))
 ```
 
-The above example will use the state's `:previous` key to remember the previous
-value, increasing it by `delta` for each new vector element:
+The above example will use the state's `:previous` key (initialized with `0`) to
+remember the previous value, increasing it by `delta` for each new vector
+element:
 
 ```clojure
 (gen/generate ascending-integers)
-;; => [[30 60 82 96 120 140 167 191 220 236 267 291 314 336 349 369 379 392]
-;;     {:previous 392}]
+;; => [30 60 82 96 120 140 167 191 220 236 267 291 314 336 349 369 379 392]
 ```
 
-As you can see, a stateful generator produces a tuple of the generated value
-and the final state.
+You can use the `state` and `value` generators to inspect the state, e.g. to
+return the whole map as part of a value/state tuple:
+
+```clojure
+(gen/generate
+  (stateful/generator
+    (gen/tuple ascending-integers (stateful/state))
+    {:top-level? true}))
+;; => [[6 29] {:previous 29, :top-level? true}]
+```
+
+As you can see here, the scopes of nested stateful generators merge, so you
+might want to use namespaced keywords to avoid clashes within the state.
 
 ## License
 
