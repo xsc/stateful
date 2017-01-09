@@ -10,7 +10,7 @@
 ;; ## Basic Behaviour
 
 (def ascending-integers
-  (stateful/pure-generator
+  (stateful/generator
     (gen/vector
       (gen/let [delta    gen/s-pos-int
                 previous (stateful/value [:previous])]

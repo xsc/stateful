@@ -48,17 +48,12 @@
   {:pre [(or (nil? initial-state)
              (map? initial-state))]}
   (let [gen' (bound-fn [rnd size]
-               (binding [*state* (or initial-state {})]
-                 (->> (gen rnd size)
-                      (dynamic/rose-tree)
-                      (rose/fmap #(vector % *state*)))))]
+               (let [state (or initial-state {})
+                     tree (binding [*state* state]
+                            (gen rnd size))]
+                 (binding [*state* state]
+                   (dynamic/rose-tree tree))))]
     (assoc generator :gen gen')))
-
-(defn pure-generator
-  "Like [[generator]], but only returns the generated value, no state."
-  [gen & [initial-state]]
-  (->> (generator gen initial-state)
-       (gen/fmap first)))
 
 (defn with-scope
   "Wrap a stateful generator to merge the given scope map into the current state

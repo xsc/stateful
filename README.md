@@ -51,8 +51,7 @@ value, increasing it by `delta` for each new vector element:
 ```
 
 As you can see, a stateful generator produces a tuple of the generated value
-and the final state. If you just want to generate a value and drop the final
-state use `stateful/pure-generator` instead of `stateful/generator`.
+and the final state.
 
 ## License
 
