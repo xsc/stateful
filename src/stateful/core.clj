@@ -20,52 +20,72 @@
 ;; ## Stateful Generator
 
 (defn generator
-  "Make the given generator return a tuple of its generated value and the state
+  "Make the given generator stateful, allowing it access to an implicit state
    map including all changes made during the run.
 
    ```clojure
    (gen/generate
      (stateful/generator gen/int))
-   ;; => [0 {}]
+   ;; => 0
    ```
 
-   Alternatively, you can supply an initial state value:
+   The output of the stateful generator will be the same as the one it wraps,
+   but you can use the [[state]] and [[value]] generators to access the current
+   state map.
 
    ```clojure
    (gen/generate
-     (stateful/generator gen/int)
-     {:number-of-elements 0})
+     (stateful/generator
+       (gen/tuple gen/int (stateful/state))))
+   ;; => [0 {}]
+   ```
+
+   Additionally, you can supply an initial state value:
+
+   ```clojure
+   (gen/generate
+     (stateful/generator
+       (gen/tuple gen/int (stateful/state))
+       {:number-of-elements 0}))
    ;; => [0 {:number-of-elements 0}]
+   ```
+
+   Note that the scopes of nested stateful generators merge, i.e.:
+
+   ```clojure
+   (gen/generate
+     (stateful/generator
+       (gen/tuple
+         (stateful/generator gen/int {:int? true})
+         (stateful/generator gen/string {:string? true})
+         (stateful/state))))
+   ;; => [0 \"\" {:int? true, :string? true}]
    ```
 
    The state can be manipulated using the [[return*]], [[return]], etc...
    generators.
 
-   Access to this state can be done with the [[state]] or [[value]] generators.
-   But note that shrinking efficiency will most likely suffer if you're using
-   data added to the state by another generator."
+   Please note that shrinking efficiency will most likely suffer if you're
+   using data added to the state by another generator."
   [{:keys [gen] :as generator} & [initial-state]]
   {:pre [(or (nil? initial-state)
              (map? initial-state))]}
   (let [gen' (bound-fn [rnd size]
-               (let [state (or initial-state {})
-                     tree (binding [*state* state]
-                            (gen rnd size))]
-                 (binding [*state* state]
-                   (dynamic/rose-tree tree))))]
-    (assoc generator :gen gen')))
+               (cond (= *state* ::none)
+                     (let [scope (or initial-state {})
+                           tree (binding [*state* scope]
+                                  (gen rnd size))]
+                       (binding [*state* scope]
+                         (dynamic/rose-tree tree)))
 
-(defn with-scope
-  "Wrap a stateful generator to merge the given scope map into the current state
-   before generating a value."
-  [scope-map gen]
-  {:pre [(map? scope-map)]}
-  (update gen
-          :gen
-          (fn [f]
-            (fn [rnd size]
-              (set! *state* (merge *state* scope-map))
-              (f rnd size)))))
+                     (empty? initial-state)
+                     (gen rnd size)
+
+                     :else
+                     (let [scope (merge *state* initial-state)]
+                       (set! *state* scope)
+                       (gen rnd size))))]
+    (assoc generator :gen gen')))
 
 ;; ## Access
 
