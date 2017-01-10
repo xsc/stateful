@@ -8,6 +8,7 @@ generate data with internal dependencies or track properties of generated
 values.
 
 [![Build Status](https://travis-ci.org/xsc/stateful.svg?branch=master)](https://travis-ci.org/xsc/stateful)
+[![Clojars Project](https://img.shields.io/clojars/v/xsc/stateful.svg)](https://clojars.org/xsc/stateful)
 
 Note that, just like with `bind`, shrinking efficiency might suffer in cases
 where you depend on the state influenced by other generators to generate new
