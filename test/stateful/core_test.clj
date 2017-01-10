@@ -50,3 +50,23 @@
                               (gen/tuple (gen/not-empty ascending-integers)
                                          (stateful/state)))]
     (= (:previous final-state) (last asc-ints))))
+
+;; ## Common Uses
+
+(defspec t-unique-generator 200
+  (prop/for-all
+    [values (stateful/generator
+              (gen/vector
+                (stateful/unique ::seen gen/int)))]
+    (= (count values) (count (distinct values)))))
+
+(deftest t-unique-generator-shrinking
+  (let [prop (prop/for-all
+               [values (stateful/generator
+                         (gen/vector
+                           (stateful/unique ::seen gen/int)))]
+               (<= (count values) 2))
+        result (is (tc/quick-check 200 prop))
+        shrunk (-> result :shrunk :smallest first)]
+    (is (false? (:result result)))
+    (is (= (count shrunk) (count (distinct shrunk))))))
