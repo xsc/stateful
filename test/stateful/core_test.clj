@@ -34,6 +34,15 @@
           result (is (tc/quick-check 200 prop))]
       (is (false? (:result result)))
       (is (= [[100]] (-> result :shrunk :smallest)))))
+  (testing "multi-element shrinking case."
+    (let [prop (prop/for-all
+                 [asc-ints ascending-integers]
+                 (<= (count asc-ints) 5))
+          result (is (tc/quick-check 300 prop))
+          shrunk (-> result :shrunk :smallest first)]
+      (is (false? (:result result)))
+      (is (= (sort shrunk) shrunk))
+      (is (= (distinct shrunk)  shrunk))))
   (testing "shrinking case for combination of stateful generators."
     (let [prop (prop/for-all
                  [ints (->> (gen/vector ascending-integers)
