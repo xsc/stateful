@@ -208,10 +208,8 @@
 
 (defn unique
   "Create a generator that returns a unique result from the given `gen`,
-   tracking all already produced values within `collection-key`.
-
-   This generator won't shrink."
+   tracking all already produced values within `collection-key`."
   [collection-key gen]
   (gen/let [free? (gen/fmap (comp complement set) (value [collection-key]))
-              value (gen/such-that free? gen 100)]
-      (return* value update collection-key (fnil conj #{}) value)))
+            value (gen/such-that free? gen 100)]
+    (return* value update collection-key (fnil conj #{}) value)))
