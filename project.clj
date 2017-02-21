@@ -9,7 +9,7 @@
                  [org.clojure/test.check "0.9.0" :scope "provided"]]
   :profiles {:dev {:global-vars {*warn-on-reflection* true}}
              :codox
-             {:plugins [[lein-codox "0.10.2"]]
+             {:plugins [[lein-codox "0.10.3"]]
               :dependencies [[codox-theme-rdash "0.1.1"]]
               :codox {:project {:name "stateful"}
                       :metadata {:doc/format :markdown}
