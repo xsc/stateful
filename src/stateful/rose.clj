@@ -1,5 +1,4 @@
-(ns stateful.dynamic
-  "Utilities to handle dynamic variables in Rose tree children."
+(ns stateful.rose
   (:require [clojure.test.check.rose-tree :as rose])
   (:import [clojure.test.check.rose_tree RoseTree]))
 
@@ -21,11 +20,18 @@
                           (cons head (bound-seq (rest sq)))))))]
     (bound-seq sq)))
 
-(defn rose-tree
+(defn bound-tree
   "Ensure that all Rose tree children have access to the dynamic variables
    currently defined."
   [^RoseTree tree]
   (rose/make-rose
     (rose/root tree)
     (bound-lazy-seq
-      (map rose-tree (rose/children tree)))))
+      (map bound-tree (rose/children tree)))))
+
+(defn fn-tree
+  "Create a rose-tree based on the given function."
+  [value-fn]
+  (rose/make-rose
+    (value-fn)
+    (repeatedly 200 (comp rose/pure value-fn))))

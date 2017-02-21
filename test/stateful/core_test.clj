@@ -31,9 +31,18 @@
     (let [prop (prop/for-all
                  [asc-ints ascending-integers]
                  (not-any? #{100} asc-ints))
-          result (is (tc/quick-check 200 prop))]
+          result (is (tc/quick-check 500 prop))]
       (is (false? (:result result)))
       (is (= [[100]] (-> result :shrunk :smallest)))))
+  (testing "multi-element shrinking case."
+    (let [prop (prop/for-all
+                 [asc-ints ascending-integers]
+                 (<= (count asc-ints) 5))
+          result (is (tc/quick-check 500 prop))
+          shrunk (-> result :shrunk :smallest first)]
+      (is (false? (:result result)))
+      (is (= (sort shrunk) shrunk))
+      (is (= (distinct shrunk) shrunk))))
   (testing "shrinking case for combination of stateful generators."
     (let [prop (prop/for-all
                  [ints (->> (gen/vector ascending-integers)
@@ -50,3 +59,23 @@
                               (gen/tuple (gen/not-empty ascending-integers)
                                          (stateful/state)))]
     (= (:previous final-state) (last asc-ints))))
+
+;; ## Common Uses
+
+(defspec t-unique-generator 200
+  (prop/for-all
+    [values (stateful/generator
+              (gen/vector
+                (stateful/unique ::seen gen/int)))]
+    (= (count values) (count (distinct values)))))
+
+(deftest t-unique-generator-shrinking
+  (let [prop (prop/for-all
+               [values (stateful/generator
+                         (gen/vector
+                           (stateful/unique ::seen gen/int)))]
+               (<= (count values) 5))
+        result (is (tc/quick-check 500 prop))
+        shrunk (-> result :shrunk :smallest first)]
+    (is (false? (:result result)))
+    (is (= (sort shrunk) (sort (distinct shrunk))))))
