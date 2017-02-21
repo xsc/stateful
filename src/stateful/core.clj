@@ -1,7 +1,6 @@
 (ns stateful.core
-  (:require [stateful.dynamic :as dynamic]
-            [clojure.test.check.generators :as gen]
-            [clojure.test.check.rose-tree :as rose]))
+  (:require [stateful.rose :as rose]
+            [clojure.test.check.generators :as gen]))
 
 ;; ## State
 
@@ -70,13 +69,13 @@
   [{:keys [gen] :as generator} & [initial-state]]
   {:pre [(or (nil? initial-state)
              (map? initial-state))]}
-  (let [gen' (bound-fn [rnd size]
+  (let [gen' (fn [rnd size]
                (cond (= *state* ::none)
                      (let [scope (or initial-state {})
                            tree (binding [*state* scope]
                                   (gen rnd size))]
                        (binding [*state* scope]
-                         (dynamic/rose-tree tree)))
+                         (rose/bound-tree tree)))
 
                      (empty? initial-state)
                      (gen rnd size)
@@ -103,10 +102,10 @@
    Use [[value]] to access a certain value using its path into the map."
   []
   (gen/->Generator
-    (bound-fn current-state-lookup
+    (fn current-state-lookup
       [_ _]
       (assert-stateful!)
-      (rose/pure *state*))))
+      (rose/fn-tree (fn [] *state*)))))
 
 (defn value
   "Generator that looks up a path within the state map.
@@ -122,9 +121,11 @@
    Use [[state]] if you need access to the full state map."
   [ks & [default]]
   {:pre [(sequential? ks)]}
-  (gen/fmap
-    #(get-in % ks default)
-    (state)))
+  (gen/->Generator
+    (fn value-lookup
+      [_ _]
+      (assert-stateful!)
+      (rose/fn-tree (fn [] (get-in *state* ks default))))))
 
 ;; ## Fmap/Bind
 
@@ -177,12 +178,13 @@
    You can use [[return]], [[return-and-count]] or [[return-and-collect]] for
    some common use cases."
   [v f & args]
-  (gen/fmap
-    (fn [value]
-      (assert-stateful!)
-      (set! *state* (apply f *state* args))
-      value)
-    (gen/return v)))
+  (gen/->Generator
+    (fn [_ _]
+      (rose/fn-tree
+        (fn []
+          (assert-stateful!)
+          (set! *state* (apply f *state* args))
+          v)))))
 
 (defn return
   "Like [[return*]], merging the given map into the current state."
@@ -206,8 +208,10 @@
 
 (defn unique
   "Create a generator that returns a unique result from the given `gen`,
-   tracking all already produced values within `collection-key`."
+   tracking all already produced values within `collection-key`.
+
+   This generator won't shrink."
   [collection-key gen]
   (gen/let [free? (gen/fmap (comp complement set) (value [collection-key]))
-            value (gen/such-that free? gen 100)]
-    (return* value update collection-key (fnil conj #{}) value)))
+              value (gen/such-that free? gen 100)]
+      (return* value update collection-key (fnil conj #{}) value)))
